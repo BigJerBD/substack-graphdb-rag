@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "substack-graphdb-rag"
+version = "0.1.0"
+description = ""
+authors = ["Jeremie Bigras-Dunberry <bigjerbd@gmail.com>"]
+readme = "README.md"
+packages = [{include = "substack_graphdb_rag"}]
+
+[tool.poetry.dependencies]
+python = "3.10.12"
+langchain = "^0.2.6"
+langchain-openai = "^0.1.14"
+langchain-community = "^0.2.6"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

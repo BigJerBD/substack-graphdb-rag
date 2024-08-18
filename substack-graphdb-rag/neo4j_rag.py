@@ -1,16 +1,9 @@
 import os
 
-from langchain.chains import GraphCypherQAChain
 from langchain_community.graphs import MemgraphGraph
+from langchain.chains import GraphCypherQAChain
 from langchain_core.prompts import PromptTemplate
 from langchain_openai import ChatOpenAI
-
-graph = MemgraphGraph(
-    url="bolt+ssc://3.139.66.247",
-    username="bigjerbd@gmail.com",
-    password="s7wvuzK77B4iuPK",
-    database='memgraph'
-)
 
 cypher_prompt = """
 Task:Generate Cypher statement to query a graph database.
@@ -19,10 +12,11 @@ Use only the provided relationship types and properties in the schema.
 Do not use any other relationship types or properties that are not provided.
 Schema:
 {schema}
-Note: Do not include any explanations or apologies in your responses.
+Note: 
+Do not include any explanations or apologies in your responses.
 Do not respond to any questions that might ask anything else than for you to construct a Cypher statement.
 Do not include any text except the generated Cypher statement.
-If the user asks about PS5, Play Station 5 or PS 5, that is the platform called PlayStation 5.
+Always try to search recursively for child nodes when possible. 
 
 The question is:
 {question}
@@ -50,22 +44,34 @@ Question: {question}
 Helpful Answer
 """
 
+question = 'Who is the redditor that comments the most?'
+
+graph = MemgraphGraph(
+    url=os.environ['NEO4J_URL'],
+    username=os.environ['NEO4J_USERNAME'],
+    password=os.environ['NEO4J_PASSWORD'],
+    database=os.environ['NEO4J_DATABASE']
+)
+
+
 chain = GraphCypherQAChain.from_llm(
     ChatOpenAI(
-        temperature=0,
-        openai_api_key='sk-substack-graph-rag-Rz185Gq5MsviijoV11pIT3BlbkFJJA1UgfxUOpEPGQOenUHl'
+        temperature=1,
+        openai_api_key=os.environ["OPENAI_API_KEY"]
     ),
     graph=graph,
-    cypher_prompt= PromptTemplate(
-        input_variables=["schema", "question"], template=cypher_prompt
-    ),
-    qa_prompt= PromptTemplate(
-        input_variables=["context", "question"], template=qa_prompt
-    ),
+    # cypher_prompt= PromptTemplate(
+    #     input_variables=["schema", "question"],
+    #     template=cypher_prompt
+    # ),
+    # qa_prompt= PromptTemplate(
+    #     input_variables=["context", "question"],
+    #     template=qa_prompt
+    # ),
     verbose=True,
     model_name="gpt-4o",
 )
 
-response = chain.invoke('How many term can be found inside the Protein Article')
+response = chain.invoke(question)
 
-print(f"Final response: {response['result']}")
+print(f"Response: {response['result']}")
